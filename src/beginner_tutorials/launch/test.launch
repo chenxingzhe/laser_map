@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <node pkg="beginner_tutorials" type="talker" name="talker"/>
+  
   <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping">
 	<remap from="msg_laser4gmapping" to="scan"/>
 	<param name="delta" value="0.1"/>
@@ -14,9 +15,11 @@
 <param name="srt" value="0"/>
 <param name="str" value="0.05"/>
 <param name="stt" value="0.05"/>
-<param name="minimumScore" value="200"/>
+<param name="minimumScore" value="2000"/>
 <param name="map_update_interval" value="1"/>
 <param name="lsigma" value="0.05"/>
   </node>
-  			
+<!-->
+<node pkg="beginner_tutorials" type="calib" name="calib" output="screen"/>
+<-->  			
 </launch>

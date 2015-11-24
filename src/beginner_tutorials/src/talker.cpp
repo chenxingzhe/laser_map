@@ -205,6 +205,7 @@ int main(int argc, char **argv)
   sleep(3);
   int count = 0;
   int flag=1;
+  int calibflag=0;
   while (ros::ok())
   {
      ros::spinOnce();
@@ -348,6 +349,8 @@ int main(int argc, char **argv)
 
 				//getPoint3D( k, p[k][i], a, b);
 				getPoint3D( x0, y0, a, b);
+				b=b*1.1176-158.9187;
+				a=a*1.1176;
 				depth[k].push_back(b);
 				worldx[k].push_back(a);
 				count1++;
@@ -389,7 +392,7 @@ int main(int argc, char **argv)
 			for (int i = 0; i < worldx[j].size(); i++)
 			{
 				//circle(pic, Point2f(worldx[j][i] / 5 +600, result.at<double>(0, j) / 5+300), 3, Scalar(255, 0, 0));
-				circle(pic, Point2f(worldx[j][i] / 5 + 600, depth[j][i] / 5 + 300), 3, Scalar(255, 0, 0));
+				circle(pic, Point2f(worldx[j][i] / 6 + 600, depth[j][i] / 6 + 300), 3, Scalar(255, 0, 0));
 			}
 			
 		}
@@ -491,7 +494,7 @@ int main(int argc, char **argv)
     static ofstream outfile;
 			if (!outfile.is_open()) {
 				cout << "not open" << endl;
-				outfile.open("laserodom.2d", ios::out);//文件名改成自己的
+				outfile.open("laserodom5.2d", ios::out);//文件名改成自己的
 				outfile<<"LaserOdometryLog"<<endl<<"#Created by Master"<<endl;
 				outfile<<"version: 1"<<endl;
 				outfile<<"sick1pose: 0 0 0"<<endl;
@@ -503,11 +506,11 @@ int main(int argc, char **argv)
 			strftime(tmp,sizeof(tmp),"%H:%M:%S",localtime(&t));
 			outfile<<"scan1Id: "<<count+1<<endl;
 			outfile<<"time: "<<tmp<<endl;
-			outfile<<"robot: "<<posOdo.at<double>(0,0)*1000<<" "<<posOdo.at<double>(0,1)*1000<<" "<<posOdo.at<double>(0,2)*180/3.1415926<<endl;
+			outfile<<"robot: "<<(int)(posOdo.at<double>(0,0)*1000)<<" "<<(int)(posOdo.at<double>(0,1)*1000)<<" "<<(int)(posOdo.at<double>(0,2)*180/3.1415926)<<endl;
 			outfile<<"sick1: ";
 			for (int i = 0; i < lasernum; i++)
 			{
-				outfile<<scan_msg.ranges[i]*1000<<" ";
+				outfile<<(int)(scan_msg.ranges[i]*1000)<<" ";
 			}
 			outfile <<endl;
     
