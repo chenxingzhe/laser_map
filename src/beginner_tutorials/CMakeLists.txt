@@ -28,10 +28,17 @@ src/lsd_lines.cpp
 src/lsd_opencv.cpp
 src/lsd_wrap.cpp)
 target_link_libraries(talker ${catkin_LIBRARIES})
+
  find_package(OpenCV REQUIRED)  
  target_link_libraries(talker  ${OpenCV_LIBS} ${Boost_LIBRARY_DIRS})
 add_dependencies(talker beginner_tutorials_generate_messages_cpp)
 
+add_executable(calib src/calib.cpp)
+target_link_libraries(calib ${catkin_LIBRARIES})
+ target_link_libraries(calib  ${OpenCV_LIBS} ${Boost_LIBRARY_DIRS})
+ add_dependencies(calib beginner_tutorials_generate_messages_cpp)
+ 
+ 
 add_executable(listener src/listener.cpp)
 target_link_libraries(listener ${catkin_LIBRARIES})
 add_dependencies(listener beginner_tutorials_generate_messages_cpp)
