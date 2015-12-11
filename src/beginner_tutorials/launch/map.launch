@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <launch>
-		<!-->
+		
   <node pkg="beginner_tutorials" type="talker" name="talker"/>
-   <-->
-  <node pkg="map_server" type="map_server" name="map_server" args="/home/zqq/laser_map/map.yaml"/>
-
+   
+  <node pkg="map_server" type="map_server" name="map_server" args="/home/nj/laser_map/map1.yaml"/>
+    <node pkg="move_base" type="move_base" name="move_base" output="screen"/>
   <!-- amcl node -->
   <node pkg="amcl" type="amcl" name="amcl" output="screen">
 

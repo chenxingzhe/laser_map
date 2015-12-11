@@ -54,7 +54,7 @@ int threshold_value1 = 80;
 int threshold_value2 = 255;
 int threshold_value3 = 80;
 int threshold_value4 = 100;
-int threshold_value5 = 689;
+int threshold_value5 = 512;
 char* trackbar_value1 = "H_low Value";
 char* trackbar_value2 = "H_high Value";
 char* trackbar_value3 = "angle_low Value";
@@ -62,11 +62,13 @@ char* trackbar_value4 = "angle_high Value";
 char* trackbar_value5 = "HIGH";
 Mat cameraMatrix, distMatrix, warp3D, warp3DInv;
 //
-double cameraPara[9] = { 371.5434     ,    0 , 314.9352,
-         0  ,371.5418 , 281.0685,
-         0       ,  0 ,   1.0000};
-double distorPara[4] = { 0.109280527881159,-0.133779598395960, 0, 0 };
-double para[5] = {  0.4576,-0.8891,-0.0012,-0.0038,742 };
+double cameraPara[9] = {367.871016672033,	0	,315.825462320025,
+0	,368.766777853911,	278.228082869275,
+0	,0	,1};
+double distorPara[4] = { 0.113921169702272,	-0.157613953720350	,0,	0 };//-0.140357318324816
+//double distorPara[4] = { 0,0,0,0 };
+//double para[5] = {  0.419985441915021	,-0.906982992790618	,0.0310764999626740	,-0.00532264202160894	,172.582853473145};
+double para[5] = {  0.470662533156081	,-0.882261736383587	,-0.00779733965388201	,-0.00549635250342565	,648.344687834478};
 double a[640], b[640], c[640];
 void Threshold_Demo(int, void*)
 {}
@@ -82,7 +84,7 @@ int my_cmp(double p1, double  p2)
 void updatePara(){
 
 	Mat(3, 3, CV_64FC1, cameraPara).copyTo(cameraMatrix);
-	Mat(4, 1, CV_64FC1, distorPara).copyTo(distMatrix);//深复制
+	Mat(4, 1, CV_64FC1, distorPara).copyTo(distMatrix);//ÉîžŽÖÆ
 
 	double q0 = para[0], q1 = para[1], q2 = para[2], q3 = para[3], h = para[4];
 	double R[9] = {
@@ -122,7 +124,7 @@ void wrongPointDetect(double p[])
 	}
 }
 
- std::list<nav_msgs::Odometry> odoBuffer; //to 时间同步
+ std::list<nav_msgs::Odometry> odoBuffer; //to Ê±ŒäÍ¬²œ
  boost::mutex mMutexOdoBuffer;
 void chatterCallback(const nav_msgs::Odometry odoValue)
  //const odometer_mecanum::odometer &odoValue
@@ -138,8 +140,10 @@ void chatterCallback(const nav_msgs::Odometry odoValue)
 int main(int argc, char **argv)
 {
   vector<double> p[640];
+   vector<double> pp[640];
 	vector<double> depth[1000];
 	vector<double> worldx[1000];
+	double obstacle[640];
 	cv::namedWindow("BarValueThres");
 	//cv::namedWindow("video");
 	string ss("");
@@ -150,7 +154,7 @@ int main(int argc, char **argv)
 	Mat frame;
 	Mat distortframe;
 	int index = 0;
-	//显示视屏
+	//ÏÔÊŸÊÓÆÁ
 	char c = 0;
 	updatePara();
 	
@@ -191,6 +195,7 @@ int main(int argc, char **argv)
 // %EndTag(PUBLISHER)%
   //ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>("odom", 1000);
 // %Tag(LOOP_RATE)%
+  ros::Publisher chatter_pub1 = n.advertise<sensor_msgs::LaserScan>("obstacle", 10);
   ros::Subscriber odom_sub=n.subscribe< nav_msgs::Odometry>("odom",1000,chatterCallback);
   ros::Rate loop_rate(10);//Rate(double frequency)
 // %EndTag(LOOP_RATE)%
@@ -211,6 +216,8 @@ int main(int argc, char **argv)
      ros::spinOnce();
     //loop_rate.sleep();
      para[4]=threshold_value5;
+     //distorPara[1]=-threshold_value5/1000.0;
+     //distorPara[0]=threshold_value5/1000.0;
      //cout<<para[1]<<endl;
      updatePara();
          cv::Mat_<double> posOdo(1,3);
@@ -234,7 +241,7 @@ int main(int argc, char **argv)
 	  
 	  if(odoBuffer.size()>20)
 	    odoBuffer.erase(odoBuffer.begin(),bestOdo);
-	  //cout<<"现在的代码："<<odoBuffer.size()<<" "<<bestErr<<endl;
+	  //cout<<"ÏÖÔÚµÄŽúÂë£º"<<odoBuffer.size()<<" "<<bestErr<<endl;
 	}
     } 
     
@@ -277,7 +284,10 @@ int main(int argc, char **argv)
 		for (int k = 0; k < 640; k++)
 		{
 			vector<double> getmin;
+			vector<double> getmin2;
 			p[k].clear();
+			pp[k].clear();
+			obstacle[k]=0;
 			double x = k, y;
 			for (int i = 0; i < out_line.size(); i++)
 			{
@@ -288,7 +298,13 @@ int main(int argc, char **argv)
 				if (k >= x1&&k <= x2 || k >= x2&&k <= x1)
 				{
 					
-					y = (x - x2) / (x1 - x2)*(y1 - y2) + y2;
+					
+				        y = (x - x2) / (x1 - x2)*(y1 - y2) + y2;
+					if(y>=430)
+					{
+					  getmin2.push_back(y);
+					}
+					else
 					getmin.push_back(y);
 				}
 				
@@ -297,6 +313,8 @@ int main(int argc, char **argv)
 				//circle(frame, Point2f(x2, y2), 3, Scalar(255, 0, 0));
 			}
 			sort(getmin.begin(), getmin.end(), my_cmp);
+			sort(getmin2.begin(), getmin2.end(), my_cmp);
+			
 			if (getmin.size() >= 4)
 			{
 				y = (getmin[0] + getmin[1]) / 2;
@@ -315,12 +333,60 @@ int main(int argc, char **argv)
 			}
 			else
 				p[k].push_back(0);
+			
+			
+			if(getmin2.size()==2)
+			{
+			    obstacle[k] = (getmin2[0] + getmin2[1]) / 2;
+			}
+			else if(getmin2.size()==1)
+			  obstacle[k]=getmin2[0];
 
 		}
+		int ccount=0;
+		double mmax=0;
+		int l=640,r=0;
+		const int ll=195,rr=410;
+		int clong=0,cmax=0;
+		for(int k=ll;k<rr;k++)
+		{
+		  if(obstacle[k]!=0)
+		  {
+		    if(k<l)
+		      l=k;
+		    if(k>r)
+		      r=k;
+		    if(clong>cmax)
+		      cmax=clong;
+		    clong=0;
+		    if(obstacle[k-1]!=0)
+		    {
+		      double t=obstacle[k]-obstacle[k-1];
+		      t=fabs(t);
+		      if(t>mmax)
+			mmax=t;
+		      
+		    }
+		    ccount++;
+		  }
+		  else
+		    clong++;
+		}
+		bool ob=false;
+		if(ccount<207||mmax>4||clong>10)
+		{
+		   sensor_msgs::LaserScan scan_msg1;
+                   scan_msg1.header.frame_id="obstacle";
+                   scan_msg1.header.stamp = ros::Time::now();
+		   chatter_pub1.publish(scan_msg1);
+		}
+		cout<<"num:"<<ccount<<endl<<"max:"<<mmax<<" clong:"<<cmax<<endl;
+		cout<<"l:"<<l<<" "<<"r:"<<r<<endl;
 		//wrongPointDetect(p);
 		Mat pic(1000, 1000, CV_8UC3);
 		int count1 = 0;
-		for (int k = 0; k < 640; k++)
+		const int nn=0;
+		for (int k = nn; k < 640-nn; k++)
 		{
 			
 			depth[k].clear();
@@ -338,6 +404,8 @@ int main(int argc, char **argv)
 
 				double x0 = p_after.at<double>(0, 0);
 				double y0 = p_after.at<double>(0, 1);
+				//double x0 = p_origin.at<double>(0, 0);
+				//double y0 = p_origin.at<double>(0, 1);
 				
 				//double x0 = p_after.at<double>(0, 0);
 				//double y0 = p_after.at<double>(0, 1);
@@ -349,8 +417,8 @@ int main(int argc, char **argv)
 
 				//getPoint3D( k, p[k][i], a, b);
 				getPoint3D( x0, y0, a, b);
-				b=b*1.1176-158.9187;
-				a=a*1.1176;
+				//b=b*1.1176-158.9187;
+				//a=a*1.1176;
 				depth[k].push_back(b);
 				worldx[k].push_back(a);
 				count1++;
@@ -369,13 +437,13 @@ int main(int argc, char **argv)
 		}
 		/*imshow("map", pic);*/
 
-		//利用线性优化系数进行优化
+		//ÀûÓÃÏßÐÔÓÅ»¯ÏµÊýœøÐÐÓÅ»¯
 		Mat x = Mat(1, 640, CV_64FC1, depth);
 		//Mat result;
 		//Mat A, B;
 		//result = aa.mul(x).mul(x) + bb.mul(x) + cc;
 		//result = aa.mul(x) + bb;
-		for (int j = 0; j < 640; j += 50)
+		for (int j = nn; j < 640-nn; j += 50)
 		{
 			//cout << result.at<double>(0, j) << " ";
 			for (int i = 0; i < p[j].size(); i++)
@@ -385,7 +453,7 @@ int main(int argc, char **argv)
 			}
 			
 		}
-		for (int j = 0; j < 640; j++)
+		for (int j = nn; j < 640-nn; j++)
 		{
 			if (p[j][0] == 0)
 				continue;
@@ -419,7 +487,7 @@ int main(int argc, char **argv)
 			static ofstream outfile;
 			if (!outfile.is_open()) {
 				cout << "not open" << endl;
-				outfile.open("depth.txt", ios::out);//文件名改成自己的
+				outfile.open("depth.txt", ios::out);//ÎÄŒþÃûžÄ³É×ÔŒºµÄ
 			}
 			for (int i = 0; i < 639; i++)
 			{
@@ -494,7 +562,7 @@ int main(int argc, char **argv)
     static ofstream outfile;
 			if (!outfile.is_open()) {
 				cout << "not open" << endl;
-				outfile.open("laserodom5.2d", ios::out);//文件名改成自己的
+				outfile.open("laserodom5.2d", ios::out);//ÎÄŒþÃûžÄ³É×ÔŒºµÄ
 				outfile<<"LaserOdometryLog"<<endl<<"#Created by Master"<<endl;
 				outfile<<"version: 1"<<endl;
 				outfile<<"sick1pose: 0 0 0"<<endl;
@@ -577,4 +645,3 @@ int main(int argc, char **argv)
   return 0;
 }
 // %EndTag(FULLTEXT)%
-

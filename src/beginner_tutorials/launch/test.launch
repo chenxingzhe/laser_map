@@ -5,19 +5,31 @@
   <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping">
 	<remap from="msg_laser4gmapping" to="scan"/>
 	<param name="delta" value="0.1"/>
-	<param name="maxUrange" value="4.99"/>
-       <param name="xmin" value="-5.0"/>
-       <param name="ymin" value="-5.0"/>
-<param name="xmax" value="5.0"/>
-<param name="ymax" value="5.0"/>
+	<param name="maxUrange" value="4.00"/>
+       <param name="xmin" value="-10.0"/>
+       <param name="ymin" value="-10.0"/>
+<param name="xmax" value="10.0"/>
+<param name="ymax" value="10.0"/>`	`																																																														
 <param name="particles" value="60"/>
 <param name="srr" value="0"/>
 <param name="srt" value="0"/>
-<param name="str" value="0.05"/>
-<param name="stt" value="0.05"/>
-<param name="minimumScore" value="2000"/>
-<param name="map_update_interval" value="1"/>
-<param name="lsigma" value="0.05"/>
+<param name="str" value="0.0"/>
+<param name="stt" value="0.0"/>
+<param name="minimumScore" value="100"/>
+<param name="map_update_interval" value="5.0"/>
+<param name="lsigma" value="0.075"/>
+<param name="sigma" value="0.05"/>
+<param name="kernelSize" value="1"/>
+<param name="lstep" value="0.02"/>
+<param name="astep" value="0.02"/>
+<param name="iterations" value="5"/>
+<param name="ogain" value="3"/>
+<param name="lskip" value="0"/>
+<param name="linearUpdate" value="0.2"/>
+<param name="angularUpdate" value="0.2"/>
+<param name="occ_thresh" value="0.25"/>
+
+
   </node>
 <!-->
 <node pkg="beginner_tutorials" type="calib" name="calib" output="screen"/>
