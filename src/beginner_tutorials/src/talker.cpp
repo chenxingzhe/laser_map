@@ -35,6 +35,7 @@
 #include <sensor_msgs/LaserScan.h>//laserScan
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_broadcaster.h>
+#include <geometry_msgs/Twist.h>
 //std header
 #include <cmath>
 #include <string>
@@ -50,9 +51,9 @@
 using namespace std;
 using namespace cv;
 //control bar
-int threshold_value1 = 80;
-int threshold_value2 = 255;
-int threshold_value3 = 80;
+int threshold_value1 = 0;
+int threshold_value2 = 15;
+int threshold_value3 = 120;
 int threshold_value4 = 100;
 int threshold_value5 = 512;
 char* trackbar_value1 = "H_low Value";
@@ -62,6 +63,7 @@ char* trackbar_value4 = "angle_high Value";
 char* trackbar_value5 = "HIGH";
 Mat cameraMatrix, distMatrix, warp3D, warp3DInv;
 //
+
 double cameraPara[9] = {367.871016672033,	0	,315.825462320025,
 0	,368.766777853911,	278.228082869275,
 0	,0	,1};
@@ -69,6 +71,17 @@ double distorPara[4] = { 0.113921169702272,	-0.157613953720350	,0,	0 };//-0.1403
 //double distorPara[4] = { 0,0,0,0 };
 //double para[5] = {  0.419985441915021	,-0.906982992790618	,0.0310764999626740	,-0.00532264202160894	,172.582853473145};
 double para[5] = {  0.470662533156081	,-0.882261736383587	,-0.00779733965388201	,-0.00549635250342565	,648.344687834478};
+
+
+/*
+double cameraPara[9] = {390.906661634462	,0	,488.336327681434,
+0	,409.411259693664	,114.058683071483,
+0	,0	,1};
+double distorPara[4] = {-0.164600797057878	,0.0185621968642294	,0	,0};//-0.140357318324816
+//double distorPara[4] = { 0,0,0,0 };
+//double para[5] = {  0.419985441915021	,-0.906982992790618	,0.0310764999626740	,-0.00532264202160894	,172.582853473145};
+double para[5] = { 0.539266699580578	,-0.805317570623778	,-0.107877011602426	,-0.221399158841710	,1043.82037293902};
+*/
 double a[640], b[640], c[640];
 void Threshold_Demo(int, void*)
 {}
@@ -137,6 +150,64 @@ void chatterCallback(const nav_msgs::Odometry odoValue)
 /**
  * This tutorial demonstrates simple sending of messages over the ROS system.
  */
+void myRange(Mat input,Mat &output,int value1,int value2,int thre1,int thre2)
+{
+  CvSize s=input.size();
+  int height=s.height;
+  int width=s.width;
+  output=Mat(height,width,CV_8UC1);
+  int dp[480]; 
+  bool num[480];
+    for(int j=0;j<width;j++)
+    {
+      
+      for(int i=0;i<height;i++)
+      {
+	num[i]=0;
+	if(i==0)
+	{
+	  if(input.at<uchar>(i,j)>value1&&input.at<uchar>(i,j)<value2)
+	  {
+	    dp[i]=1;
+	  }
+	  else
+	  {
+	    dp[i]=0;
+	  }
+	}
+	else
+	{
+	    if(input.at<uchar>(i,j)>value1&&input.at<uchar>(i,j)<value2)
+	    {
+		  dp[i]=dp[i-1]+1;
+	    }
+	    else
+	    {
+	       dp[i]=0;
+	       if(dp[i-1]>thre1&&dp[i-1]<thre2)
+	       {
+		   for(int k=0;k<dp[i-1];k++)
+		   {
+		      num[i-1-k]=1;
+		   }
+		 
+	       }
+	    }
+	    
+	}
+      }
+      for(int i=0;i<height;i++)
+      {
+	if(num[i])
+	output.at<uchar>(i,j)=255;
+	else
+	output.at<uchar>(i,j)=0; 
+	
+	
+      }
+      
+    }
+}
 int main(int argc, char **argv)
 {
   vector<double> p[640];
@@ -262,8 +333,14 @@ int main(int argc, char **argv)
 		if (!frame.data)
 			continue;
 		Mat gray,gray1;
-		cvtColor(frame, gray, CV_RGB2GRAY);
-		inRange(gray, threshold_value1, threshold_value2, gray1);
+		//cvtColor(frame, gray, CV_RGB2GRAY);
+		//inRange(gray, threshold_value1, threshold_value2, gray1);
+		Mat out;
+		bilateralFilter(frame,out,9,75,threshold_value4);
+		cvtColor(out, gray, CV_RGB2GRAY);
+		myRange(gray,gray1,threshold_value3,256,threshold_value1,threshold_value2);
+		//erode(gray1,gray1,Mat());
+		imshow("myrange",gray1);
 	    //line detect
 		Mat roiImageH;
 		//cvtColor(gray1, roiImageH, CV_RGB2HSV);//just input your image here
@@ -279,8 +356,10 @@ int main(int argc, char **argv)
 		
 		lsd_std->detect(image, lines_std);
 		//filter lines
-		lsd_std->filterOutAngle(lines_std, out_line,threshold_value3, threshold_value4);
+		lsd_std->filterOutAngle(lines_std, out_line,threshold_value4, threshold_value4);
 		//
+		
+		
 		for (int k = 0; k < 640; k++)
 		{
 			vector<double> getmin;
@@ -317,15 +396,67 @@ int main(int argc, char **argv)
 			
 			if (getmin.size() >= 4)
 			{
-				y = (getmin[0] + getmin[1]) / 2;
+				if(fabs(getmin[0]-getmin[1])>=15)
+				{
+				  y=getmin[0];
+				  p[k].push_back(y);
+				  if(fabs(getmin[1]-getmin[2])>=15)
+				    y=getmin[1];
+				  else
+				  {
+				     y = (getmin[1] + getmin[2]) / 2;
+				  }
+				  p[k].push_back(y);
+				}
+				else{
+			        y = (getmin[0] + getmin[1]) / 2;
 				p[k].push_back(y);
-				y = (getmin[2] + getmin[3]) / 2;
-				p[k].push_back(y);
+				if(fabs(getmin[2]-getmin[3])>=15)
+				 y = getmin[2] ;
+				else
+				{
+				   y = (getmin[2] + getmin[3]) / 2;
+				}
+				 p[k].push_back(y);
+				}
+				
 			}
-			else if (getmin.size() > 1)
+			else if (getmin.size() == 3)
 			{
-				y = (getmin[0] + getmin[1]) / 2;
+				if(fabs(getmin[0]-getmin[1])>=15)
+				{
+				  y=getmin[0];
+				  p[k].push_back(y);
+				  if(fabs(getmin[1]-getmin[2])>=15)
+				    y=getmin[1];
+				  else
+				  {
+				     y = (getmin[1] + getmin[2]) / 2;
+				  }
+				  p[k].push_back(y);
+				}
+				else{
+			        y = (getmin[0] + getmin[1]) / 2;
 				p[k].push_back(y);
+				 y = getmin[2] ;
+				 p[k].push_back(y);
+				}
+			}
+			else if(getmin.size() == 2)
+			{
+			        if(fabs(getmin[0]-getmin[1])>=15)
+				{
+				   y=getmin[0];
+				   p[k].push_back(y);
+				   y=getmin[1];
+				    p[k].push_back(y);
+				   
+				}
+				else
+				{
+				   y = (getmin[0] + getmin[1]) / 2;
+				    p[k].push_back(y);
+				}
 			}
 			else if (getmin.size() == 1)
 			{
