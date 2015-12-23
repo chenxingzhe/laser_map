@@ -3,7 +3,7 @@
   	
   <node pkg="beginner_tutorials" type="talker" name="talker"/>
   
-  <node pkg="map_server" type="map_server" name="map_server" args="/home/nj/laser_map/map1.yaml"/>
+  <node pkg="map_server" type="map_server" name="map_server" args="/home/nj/laser_map/map3.yaml"/>
 
   <!-- amcl node -->
   <node pkg="amcl" type="amcl" name="amcl" output="screen">
@@ -60,6 +60,6 @@
         <rosparam file="/home/nj/laser_map/costmap_common_params.yaml" command="load" ns="local_costmap" />
         <rosparam file="/home/nj/laser_map/local_costmap_params.yaml" command="load" />
         <rosparam file="/home/nj/laser_map/global_costmap_params.yaml" command="load" />
-        <rosparam file="/home/nj/laser_map/base_local_planner_params.yaml" command="load" />
+        <rosparam file="/home/nj/laser_map/dwa_local_planner_params.yaml" command="load" />
   </node>
 </launch>

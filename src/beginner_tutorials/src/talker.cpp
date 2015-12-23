@@ -64,13 +64,13 @@ char* trackbar_value5 = "HIGH";
 Mat cameraMatrix, distMatrix, warp3D, warp3DInv;
 //
 
-double cameraPara[9] = {367.871016672033,	0	,315.825462320025,
-0	,368.766777853911,	278.228082869275,
+double cameraPara[9] = {369.313700415334	,0	,316.087718879591,
+0	,370.065348501022	,278.559753393007,
 0	,0	,1};
-double distorPara[4] = { 0.113921169702272,	-0.157613953720350	,0,	0 };//-0.140357318324816
+double distorPara[4] = {0.117764408735453	,-0.162511049091943,	0	,0 };//-0.140357318324816
 //double distorPara[4] = { 0,0,0,0 };
 //double para[5] = {  0.419985441915021	,-0.906982992790618	,0.0310764999626740	,-0.00532264202160894	,172.582853473145};
-double para[5] = {  0.470662533156081	,-0.882261736383587	,-0.00779733965388201	,-0.00549635250342565	,648.344687834478};
+double para[5] = { 0.472486986430148	,-0.881048371494895	,-0.0148302002355336	,-0.0170258597822583	,642.749185507263};
 
 
 /*
@@ -336,8 +336,8 @@ int main(int argc, char **argv)
 		//cvtColor(frame, gray, CV_RGB2GRAY);
 		//inRange(gray, threshold_value1, threshold_value2, gray1);
 		Mat out;
-		bilateralFilter(frame,out,9,75,threshold_value4);
-		cvtColor(out, gray, CV_RGB2GRAY);
+		//bilateralFilter(frame,out,9,75,threshold_value4);
+		cvtColor(frame, gray, CV_RGB2GRAY);
 		myRange(gray,gray1,threshold_value3,256,threshold_value1,threshold_value2);
 		//erode(gray1,gray1,Mat());
 		imshow("myrange",gray1);
@@ -477,7 +477,7 @@ int main(int argc, char **argv)
 		int ccount=0;
 		double mmax=0;
 		int l=640,r=0;
-		const int ll=195,rr=410;
+		const int ll=195,rr=400;
 		int clong=0,cmax=0;
 		for(int k=ll;k<rr;k++)
 		{
@@ -504,7 +504,7 @@ int main(int argc, char **argv)
 		    clong++;
 		}
 		bool ob=false;
-		if(ccount<207||mmax>4||clong>10)
+		if(ccount<195||mmax>4||clong>10)
 		{
 		   sensor_msgs::LaserScan scan_msg1;
                    scan_msg1.header.frame_id="obstacle";
