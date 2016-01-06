@@ -14,17 +14,17 @@
 		  <param name="odom_model_type" value="omni"/>
 		  <param name="odom_alpha5" value="0.1"/>
 		  <param name="transform_tolerance" value="0.5" />
-		  <param name="gui_publish_rate" value="10.0"/>
-		  <param name="laser_max_beams" value="100"/>
+		  <param name="gui_publish_rate" value="5"/>
+		  <param name="laser_max_beams" value="30"/>
 		  <param name="min_particles" value="500"/>
 		  <param name="max_particles" value="2000"/>
 		  <param name="kld_err" value="0.1"/>
 		  <param name="kld_z" value="0.99"/>
-		  <param name="odom_alpha1" value="0.1"/>
-		  <param name="odom_alpha2" value="0.1"/>
+		  <param name="odom_alpha1" value="0.2"/>
+		  <param name="odom_alpha2" value="0.2"/>
 		  <!-- translation std dev, m -->
-		  <param name="odom_alpha3" value="0.1"/>
-		  <param name="odom_alpha4" value="0.1"/>
+		  <param name="odom_alpha3" value="0.2"/>
+		  <param name="odom_alpha4" value="0.2"/>
 		  <param name="laser_z_hit" value="0.9"/>
 		  <param name="laser_z_short" value="0.05"/>
 		  <param name="laser_z_max" value="0.05"/>
@@ -51,6 +51,7 @@
 		  <param name="initial_cov_xx" value="15"/>
 		  <param name="initial_cov_aa" value="15"/>
 		  <param name="initial_cov_yy" value="15"/>
+ 		<param name="tf_broadcast" value="true"/>
 
 
 
@@ -60,6 +61,8 @@
         <rosparam file="/home/nj/laser_map/costmap_common_params.yaml" command="load" ns="local_costmap" />
         <rosparam file="/home/nj/laser_map/local_costmap_params.yaml" command="load" />
         <rosparam file="/home/nj/laser_map/global_costmap_params.yaml" command="load" />
-        <rosparam file="/home/nj/laser_map/dwa_local_planner_params.yaml" command="load" />
+                  <param name="max_vel_x" value="0.3"/>
+		  <param name="yaw_goal_tolerance" value="1"/>
+	<rosparam file="/home/nj/laser_map/base_local_planner_params.yaml" command="load"  />
   </node>
 </launch>

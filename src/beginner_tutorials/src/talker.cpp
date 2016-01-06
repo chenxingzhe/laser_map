@@ -322,7 +322,7 @@ ros::Rate loop_rate(10);//Rate(double frequency)
       if(posOdo.empty()) //posOdo.empty()
       {
           //loop_rate.sleep();
-          continue;
+          //continue;
       }
       //cout<<"ododata:"<<posOdo<<endl;
       /*else{
@@ -424,7 +424,7 @@ ros::Rate loop_rate(10);//Rate(double frequency)
         int ccount=0;
         double mmax=0;
         int l=640,r=0;
-        const int ll=195,rr=410;
+        const int ll=195-20,rr=410+20;
         int clong=0,cmax=0;
         int clongtre=10;
         bool obsCon[640];
@@ -464,7 +464,7 @@ ros::Rate loop_rate(10);//Rate(double frequency)
             clong++;
         }
         bool ob=false;
-        if(ccount<207||mmax>4||clong>10)
+        if(ccount<rr-ll-8||mmax>4||clong>10)
         {
             sensor_msgs::LaserScan scan_msg1;
             scan_msg1.header.frame_id="obstacle";
@@ -703,7 +703,7 @@ ROS_INFO("%s", msg.data.c_str());
     //tf::Quaternion q;
     q.setRPY(0, 0, 0);
     map_transform.setRotation(q);
-    map_broadcaster.sendTransform(tf::StampedTransform(map_transform, ros::Time::now(), "map", "odom"));
+    //map_broadcaster.sendTransform(tf::StampedTransform(map_transform, ros::Time::now(), "map", "odom"));
 
 
 
