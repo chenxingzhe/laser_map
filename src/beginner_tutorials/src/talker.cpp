@@ -424,7 +424,7 @@ ros::Rate loop_rate(10);//Rate(double frequency)
         int ccount=0;
         double mmax=0;
         int l=640,r=0;
-        const int ll=195-20,rr=410+20;
+        const int ll=195,rr=410;
         int clong=0,cmax=0;
         int clongtre=10;
         bool obsCon[640];
@@ -445,8 +445,8 @@ ros::Rate loop_rate(10);//Rate(double frequency)
                     for(int ii=1;ii<=clong;ii++ )
                     {
                         int num=k-ii;
-                        obstaclex.push_back((num-ll)*1.0/(rr-ll)*0.4-0.20);
-                        obstacley.push_back(0.3);
+                        obstaclex.push_back((num-ll)*1.0/(rr-ll)*0.3-0.15);
+                        obstacley.push_back(0.2); 
                     }
                 }
                 clong=0;
@@ -464,7 +464,7 @@ ros::Rate loop_rate(10);//Rate(double frequency)
             clong++;
         }
         bool ob=false;
-        if(ccount<rr-ll-8||mmax>4||clong>10)
+        if(cmax>clongtre)//ccount<rr-ll-15||mmax>8||
         {
             sensor_msgs::LaserScan scan_msg1;
             scan_msg1.header.frame_id="obstacle";
